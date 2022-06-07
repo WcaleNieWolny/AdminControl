@@ -1,0 +1,4 @@
+name: AdminControl
+version: '${version}'
+main: pl.wolny.admincontrol.AdminControl
+api-version: 1.18
