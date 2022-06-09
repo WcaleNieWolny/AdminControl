@@ -15,28 +15,48 @@ repositories {
     maven { url = uri("https://papermc.io/repo/repository/maven-public/") }
     maven { url = "https://oss.sonatype.org/content/repositories/snapshots/" }
     maven { url = "https://nexus.sirblobman.xyz/repository/public/" }
+    maven { url = "https://repo.aikar.co/content/groups/aikar/" }
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
         jvmTarget = "17"
         freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
+        javaParameters = true
     }
 }
 
 tasks {
+    runServer.dependsOn build
     build.dependsOn shadowJar
+}
+
+runServer {
+    minecraftVersion("1.18.2")
+}
+
+shadowJar {
+    relocate 'co.aikar.commands', 'pl.wolny.admincontrol.acf'
+    relocate 'co.aikar.locales', 'pl.wolny.admincontrol.locales'
 }
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
+compileJava {
+    options.compilerArgs += ["-parameters"]
+    options.fork = true
+    options.forkOptions.executable = 'javac'
+}
+
 dependencies {
-    compileOnly 'io.papermc.paper:paper-api:1.18.1-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:1.18.2-R0.1-SNAPSHOT'
     implementation 'net.kyori:adventure-text-minimessage:4.10.1'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.21'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3'
+
+    implementation "co.aikar:acf-paper:0.5.1-SNAPSHOT"
 }
 
 def pluginName = "WolnyAdminControl"
@@ -48,12 +68,6 @@ spigot {
     website = "https://github.com/WcaleNieWolny/"
     apiVersion = "1.18"
     excludeLibraries = ['*']
-    commands {
-        admin {
-            permission 'adminsystem.use'
-            permissionMessage 'Nie jesteś administratorem!'
-        }
-    }
     permissions {
         create("admincontrol.use") {
             description = "Allow usage of /admin command"
